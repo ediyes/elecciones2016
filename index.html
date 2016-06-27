@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<title>Elecciones Presidenciales 2016 - Peru</title>
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js'></script>
+<link href='https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+
+
+<div id='map'></div>
+<div id='tittle'><h1>Elecciones Presidenciales 2016 - Peru</h1></div>
+<style>
+#tittle{
+  position: absolute;
+  z-index: 999;
+  width: 550px;
+  height: 70px;
+  right: 5px;
+  background: #fff;
+  opacity: 0.8;
+  text-align: center;
+
+
+}
+</style>
+<script src='datos.geojson'></script>
+<script>
+L.mapbox.accessToken = 'pk.eyJ1IjoiZWRpeWVzIiwiYSI6Im5WZElPMjgifQ.J-9jIpcP3KnYZfCtXpj0vg';
+  var map = L.mapbox.map('map', 'mapbox.streets')
+    .setView([-10, -75], 6);
+
+  var popup = new L.Popup({ autoPan: false });
+
+  var statesLayer = L.geoJson(statesData,  {
+      style: getStyle,
+      onEachFeature: onEachFeature
+  }).addTo(map);
+
+  function getStyle(feature) {
+      return {
+          weight: 3,
+          opacity: 0.1,
+          color: 'black',
+          fillOpacity: 0.7,
+          fillColor: getColor(feature.properties.ganador)
+      };
+  }
+
+  // get color depending on population density value
+  function getColor(d) {
+      if(d=='PPK' ){
+        return  '#6F65DD' ;
+      }else{
+        return  '#FFBF27';
+      }
+  }
+
+  function onEachFeature(feature, layer) {
+      layer.on({
+          mousemove: mousemove,
+          mouseout: mouseout,
+          click: zoomToFeature
+      });
+  }
+
+  var closeTooltip;
+
+  function mousemove(e) {
+      var layer = e.target;
+
+      popup.setLatLng(e.latlng);
+      popup.setContent('<div class="marker-title">Resultados</div>' +
+          "Votos PPK :" + layer.feature.properties["Votos PPK"] +'</br>'+
+          "Votos FP :" + layer.feature.properties["Votos FP"]);
+
+      if (!popup._map) popup.openOn(map);
+      window.clearTimeout(closeTooltip);
+
+      // highlight feature
+      layer.setStyle({
+          weight: 3,
+          opacity: 0.3,
+          fillOpacity: 0.9
+      });
+
+      if (!L.Browser.ie && !L.Browser.opera) {
+          layer.bringToFront();
+      }
+  }
+
+  function mouseout(e) {
+      statesLayer.resetStyle(e.target);
+      closeTooltip = window.setTimeout(function() {
+          map.closePopup();
+      }, 100);
+  }
+
+  function zoomToFeature(e) {
+      map.fitBounds(e.target.getBounds());
+  }
+
+</script>
+
+
+</body>
+</html>
